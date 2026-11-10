@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thirteen (Tiến Lên) — Classic Shedding Card Game</title>
+  <meta
+    name="description"
+    content="Play Thirteen (Tiến Lên), the classic 4-player Vietnamese shedding card game with authentic Southern rules, bomb chops, smart AI opponents, and live match scoring."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="./styles/index.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header & Match Controls -->
+    <header class="topbar">
+      <div class="brand">
+        <h1 class="brand-title">Thirteen</h1>
+        <span class="brand-subtitle">Tiến Lên</span>
+      </div>
+
+      <div class="topbar-meta">
+        <span class="round-pill">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="round-label">Round 1</span>
+        </span>
+
+        <label class="sr-only" for="difficulty-select" hidden>AI Difficulty</label>
+        <select id="difficulty-select" class="control-select" aria-label="AI Difficulty">
+          <option value="casual">AI: Casual</option>
+          <option value="standard" selected>AI: Standard</option>
+          <option value="sharp">AI: Sharp</option>
+        </select>
+      </div>
+
+      <nav class="topbar-controls" aria-label="Game controls">
+        <button id="btn-sort" type="button" class="icon-btn" title="Toggle Rank/Suit sort (S)">
+          Sort: Rank
+        </button>
+        <button id="btn-sound" type="button" class="icon-btn" aria-pressed="true">
+          Sound: On
+        </button>
+        <button id="btn-rules" type="button" class="icon-btn">
+          Rules
+        </button>
+        <button id="btn-new-match" type="button" class="icon-btn">
+          New Match
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Card Room Table -->
+    <main class="table-stage">
+      <div class="table-rail">
+        <section id="table-felt" class="table-felt" aria-label="Card table">
+          <!-- Opponent Seats -->
+          <div class="seat-west-wrap">
+            <div id="seat-west" class="opponent-card" aria-live="polite"></div>
+          </div>
+
+          <div class="seat-north-wrap">
+            <div id="seat-north" class="opponent-card" aria-live="polite"></div>
+          </div>
+
+          <div class="seat-east-wrap">
+            <div id="seat-east" class="opponent-card" aria-live="polite"></div>
+          </div>
+
+          <!-- Center Trick Arena -->
+          <div class="trick-arena">
+            <div id="table-watermark" class="table-watermark">
+              <span class="watermark-suits" aria-hidden="true">♠ &lt; ♣ &lt; ♦ &lt; ♥</span>
+              <span class="watermark-rule">Open Table · Lead Any Combination</span>
+            </div>
+
+            <div id="trick-stack" class="trick-stack" hidden>
+              <div id="trick-prev-play" class="trick-previous-play" aria-hidden="true"></div>
+              <div id="trick-active-play" class="trick-active-play"></div>
+            </div>
+
+            <div id="trick-caption" class="trick-caption" hidden></div>
+            <div id="event-ticker" class="event-ticker" aria-live="polite"></div>
+          </div>
+
+          <!-- Human Player Zone (South) -->
+          <div class="player-south-wrap">
+            <div class="player-hud">
+              <div class="player-identity">
+                <span id="you-badge" class="you-badge">
+                  <span id="you-status-text">You</span>
+                </span>
+                <span id="you-score" class="you-score">0 pts</span>
+              </div>
+
+              <div id="selection-feedback" class="selection-feedback" role="status">
+                Select cards to play
+              </div>
+
+              <div class="action-bar">
+                <button id="btn-clear" type="button" class="btn btn-ghost" disabled>
+                  Clear <span class="kbd-hint">C</span>
+                </button>
+                <button id="btn-hint" type="button" class="btn btn-ghost">
+                  Hint <span class="kbd-hint">H</span>
+                </button>
+                <button id="btn-pass" type="button" class="btn btn-pass" disabled>
+                  Pass <span class="kbd-hint">P</span>
+                </button>
+                <button id="btn-play" type="button" class="btn btn-play" disabled>
+                  Play Hand <span class="kbd-hint">↵</span>
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="hand-tray"
+              class="hand-tray"
+              role="group"
+              aria-label="Your cards (double-click a card to auto-select a valid combination)"
+            ></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Round Summary & Match Standings Modal -->
+  <div id="summary-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="summary-title" hidden>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <h2 id="summary-title" class="modal-title">Round Complete</h2>
+          <p id="summary-subtitle" class="modal-subtitle"></p>
+        </div>
+      </div>
+
+      <ul id="summary-bonuses" class="bonus-list" hidden></ul>
+
+      <table class="standings-table">
+        <thead>
+          <tr>
+            <th>Finish</th>
+            <th>Player</th>
+            <th>Round</th>
+            <th>Match Score</th>
+          </tr>
+        </thead>
+        <tbody id="summary-table-body"></tbody>
+      </table>
+
+      <div class="modal-footer">
+        <button id="btn-summary-new-match" type="button" class="btn btn-ghost">
+          Reset Match
+        </button>
+        <button id="btn-next-round" type="button" class="btn btn-play">
+          Deal Next Round
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules & Combination Guide Modal -->
+  <div id="rules-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="rules-title" hidden>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <h2 id="rules-title" class="modal-title">How to Play Thirteen (Tiến Lên)</h2>
+          <p class="modal-subtitle">Southern Vietnamese rules · 4 players · 13 cards each</p>
+        </div>
+        <button id="btn-close-rules" type="button" class="icon-btn" aria-label="Close rules">✕</button>
+      </div>
+
+      <div class="rules-section">
+        <h3>1. Objective &amp; Opening Lead</h3>
+        <p>
+          Be the first player to shed all 13 cards. In Round 1, whoever holds the
+          <strong>3♠</strong> leads first and must include <strong>3♠</strong> in their opening combination.
+          In later rounds, the previous winner leads any valid combination.
+        </p>
+      </div>
+
+      <div class="rules-section">
+        <h3>2. Card &amp; Suit Hierarchy</h3>
+        <ul>
+          <li><strong>Ranks (low → high):</strong> 3 &lt; 4 &lt; 5 &lt; 6 &lt; 7 &lt; 8 &lt; 9 &lt; 10 &lt; J &lt; Q &lt; K &lt; A &lt; <strong>2</strong></li>
+          <li><strong>Suits (low → high):</strong> ♠ Spades &lt; ♣ Clubs &lt; ♦ Diamonds &lt; ♥ Hearts</li>
+          <li><strong>2♥</strong> is the highest single card in the deck; <strong>3♠</strong> is the lowest.</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>3. Valid Combinations</h3>
+        <ul>
+          <li><strong>Single, Pair, Triple, Four of a Kind:</strong> Matching ranks. Ties in rank are broken by the highest card's suit (e.g., <strong>8♠ 8♥</strong> beats <strong>8♣ 8♦</strong>).</li>
+          <li><strong>Straight (Sequence):</strong> 3 or more consecutive ranks of any suit (e.g., <strong>4♣-5♠-6♥</strong>). <strong>2s can never be used in straights.</strong></li>
+          <li><strong>Consecutive Pairs (Double Sequence):</strong> 3 or more adjacent pairs (e.g., <strong>55-66-77</strong>).</li>
+        </ul>
+      </div>
+
+      <div class="rules-section">
+        <h3>4. Bombs ("Chặt Heo") &amp; Passing</h3>
+        <ul>
+          <li>Passing locks you out until everyone else passes and a fresh trick begins.</li>
+          <li><strong>Chop a Single 2:</strong> Play <strong>3+ Consecutive Pairs</strong> or <strong>Four of a Kind</strong> (+2 bonus pts!).</li>
+          <li><strong>Chop a Pair of 2s:</strong> Play <strong>Four of a Kind</strong> or <strong>4+ Consecutive Pairs</strong>.</li>
+          <li><strong>Tips:</strong> Double-click any card to auto-select a valid multi-card combo, or press <strong>H</strong> to cycle legal hints.</li>
+        </ul>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-got-it-rules" type="button" class="btn btn-play">
+          Back to Table
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/ui/app.js"></script>
+</body>
+</html>

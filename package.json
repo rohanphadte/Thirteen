@@ -1,0 +1,18 @@
+{
+  "name": "thirteen-card-game",
+  "version": "1.0.0",
+  "description": "Thirteen (Tiến Lên) — classic 4-player shedding card game built with HTML, Vanilla CSS, and ES Modules.",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 3000",
+    "start": "python3 -m http.server 3000",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "keywords": [
+    "thirteen",
+    "tien-len",
+    "card-game",
+    "javascript"
+  ],
+  "license": "MIT"
+}
